@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b5d4b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>نتائج الحلقة اليومية</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -181,6 +186,45 @@ summary{color:var(--accent)}
 #left .cd{margin:0 0 8px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 10px}
 #left .cd summary{font-weight:700;color:var(--accent)}
 .btn.ok{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+/* ===== تصميم اللابتوب (الشاشات العريضة فقط، لا يؤثر على الهاتف) ===== */
+@media (min-width:1000px){
+ html,body{overflow-x:hidden}
+ body{font-size:18px}
+ main{max-width:1180px;padding:0 32px 120px}
+ .hero{margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);padding:calc(18px + env(safe-area-inset-top,0px)) 24px 20px;border-radius:0 0 36px 36px;margin-bottom:18px}
+ .hero .bism{font-size:24px}
+ .hero h1{font-size:32px}
+ .tabs{max-width:620px;margin:0 auto 18px}
+ .stat{margin-bottom:10px}
+ #v1{display:grid;grid-template-columns:360px minmax(0,1fr);gap:0 26px;align-items:start}
+ #v1 .pane1{position:sticky;top:14px;max-height:calc(100vh - 100px);overflow:auto;padding:2px 2px 8px}
+ #v1 .pane2{min-width:0}
+ #v1 .more{grid-column:1/-1}
+ #list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+ #list>p,#list>.note{grid-column:1/-1}
+ #list .st{margin-bottom:0}
+ #list .nm{font-size:21px}
+ #out{margin-top:20px}
+ .more>details{margin-top:10px}
+ #names{min-height:240px}
+ #v2,#v3{max-width:980px;margin:0 auto}
+ #pl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ #pl .pc{margin-bottom:0}
+ .bar{padding-left:calc(50% - 590px);padding-right:calc(50% - 590px)}
+ .bar .btn{max-width:340px}
+}
+@media (min-width:1000px) and (hover:hover){
+ .btn:hover{filter:brightness(1.08)}
+ .btn.alt:hover{border-color:var(--accent)}
+ .chip:hover,.qb:hover,.abs:hover{border-color:var(--accent)}
+ .pc:hover,.st:hover{box-shadow:0 6px 18px rgba(80,60,15,.14)}
+}
+@media (min-width:1500px){
+ main{max-width:1380px}
+ #v1{grid-template-columns:400px minmax(0,1fr)}
+ #pl{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .bar{padding-left:calc(50% - 690px);padding-right:calc(50% - 690px)}
+}
 </style>
 </head>
 <body>
@@ -190,6 +234,7 @@ summary{color:var(--accent)}
 <div id="bkn" class="stat bad" style="display:none"></div>
 <div class="tabs"><button class="tab on" id="t1" type="button">التسميع اليومي</button><button class="tab" id="t2" type="button">ملفات الطلاب</button><button class="tab" id="t3" type="button">التقارير</button></div>
 <div id="v1">
+<div class="pane1">
 <div class="date"><label for="d">التاريخ</label><input type="date" id="d"><button class="btn alt" id="hol" type="button" style="white-space:nowrap">عطلة</button></div>
 <div style="display:flex;gap:8px;margin-bottom:10px"><button class="btn" id="tas" type="button" style="flex:1;font-size:19px">التسميع</button><button class="btn alt" id="qab" type="button" style="flex:1;font-size:19px">حضور سريع</button></div>
 <div id="qa" class="qa" style="display:none"></div>
@@ -197,12 +242,15 @@ summary{color:var(--accent)}
 <div id="left"></div>
 <div id="cnt"></div>
 <div id="amp" class="qa" style="display:none"></div>
+</div>
+<div class="pane2">
 <div id="list"></div>
 <section id="out">
 <div id="imgs"></div>
 <div class="acts" id="oacts"></div>
 <p class="note" id="note"></p>
 </section>
+</div>
 <details class="more"><summary>المزيد</summary>
 <details>
 <summary>تعديل قائمة الأسماء</summary>
@@ -212,7 +260,7 @@ summary{color:var(--accent)}
 </details>
 <details id="cdd"><summary>أيام الدراسة</summary><p class="note">الأيام غير المحددة ليست أيام دراسة، ولا يُحسب فيها غياب.</p><div id="cdl" class="chips"></div></details>
 <details id="dlg"><summary>سجل الأيام (تصحيح وحذف)</summary><p class="note">افتح يومًا لتصحيحه أو احذفه.</p><div id="dlist"></div></details>
-<details><summary>اسم الحلقة والمظهر</summary><div class="acts" style="margin-top:10px"><button class="btn" id="setupBtn" type="button">تغيير الاسم واللون</button></div></details>
+<details><summary>اسم الحلقة والمظهر</summary><p class="note" id="whoami" style="margin:10px 0 0"></p><div class="acts" style="margin-top:10px"><button class="btn" id="setupBtn" type="button">تغيير الاسم واللون</button><button class="btn alt" id="instBtn" type="button" style="display:none">تثبيت التطبيق</button></div></details>
 <details><summary>نسخة احتياطية</summary><div class="acts" style="margin-top:10px"><button class="btn" id="bkx" type="button">تصدير نسخة احتياطية</button><label class="btn alt" for="bki">استعادة من نسخة</label><input type="file" id="bki" accept=".json,application/json" hidden></div><p class="note">صدّر نسخة كل أسبوع. الاستعادة تدمج النسخة مع بياناتك.</p><div class="acts"><button class="btn alt" id="lo" type="button">تسجيل الخروج</button></div></details>
 </details>
 </div>
@@ -412,7 +460,7 @@ S.profiles=S.profiles||{};
 const P=n=>S.profiles[n]||(S.profiles[n]={ach:[],warn:[]});
 const fd=v=>{if(!v)return "—";const [y,m,d]=v.split("-");return d+"/"+m+"/"+y};
 const today=()=>iso(new Date());
-function tab(v){[1,2,3].forEach(i=>{$("v"+i).style.display=i==v?"block":"none";$("t"+i).classList.toggle("on",i==v)});document.querySelector(".bar").style.display=v==1?"flex":"none";if(v==2)plist();if(v==3)reports()}
+function tab(v){[1,2,3].forEach(i=>{$("v"+i).style.display=i==v?"":"none";$("t"+i).classList.toggle("on",i==v)});document.querySelector(".bar").style.display=v==1?"flex":"none";if(v==2)plist();if(v==3)reports()}
 $("t1").onclick=()=>tab(1);$("t2").onclick=()=>tab(2);$("t3").onclick=()=>tab(3);
 function plist(){const v=$("v2");v.innerHTML='<div style="display:flex;gap:8px;margin-bottom:10px"><input type="text" id="pq" placeholder="بحث" autocomplete="off"><button class="btn" id="pa" type="button" style="white-space:nowrap">+ طالب جديد</button></div><div id="pnew" style="display:none;margin-bottom:10px"><div style="display:flex;gap:8px"><input type="text" id="pnn" placeholder="الاسم" autocomplete="off"><button class="btn" id="pns" type="button">إضافة</button></div><p class="note" id="pne"></p></div><button class="btn alt" id="pw" type="button" style="width:100%;margin-bottom:10px">قائمة الانتظار</button><div id="pwl" style="display:none"></div><button class="btn alt" id="pst" type="button" style="width:100%;margin-bottom:10px">إحصاء الطلبة (جدول للواتساب)</button><div id="pstv" style="display:none"></div><div id="pl"></div>';
  const draw=()=>{const q=nz($("pq").value),L=$("pl");L.innerHTML="";
@@ -494,12 +542,23 @@ function loginUI(sb){return new Promise(res=>{
   if(error||!data.session){m.textContent="تعذّر الدخول: تأكد من البريد وكلمة المرور";return}
   o.remove();res(data.session)};
  o.querySelector("#lgB").onclick=go;o.querySelector("#lgP").addEventListener("keydown",e=>{if(e.key==="Enter")go()})})}
+function loadScript(u){return new Promise(r=>{const e=document.createElement("script");e.src=u;e.onload=()=>r(true);e.onerror=()=>r(false);document.head.appendChild(e)})}
+async function ensureLib(){
+ if(window.supabase)return true;
+ for(const u of["https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js","https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"]){await loadScript(u);if(window.supabase)return true}
+ return false}
+function blockUI(msg){
+ if(document.getElementById("blk"))return;
+ const o=document.createElement("div");o.id="blk";o.style.cssText="position:fixed;inset:0;z-index:10000;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px";
+ o.innerHTML='<div style="background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;width:100%;max-width:380px;color:var(--ink)"><h2 style="margin:0 0 10px;font-size:20px">تعذّر الاتصال بخدمة الحفظ</h2><p style="margin:0 0 12px;line-height:1.8">'+msg+'</p><button id="blkB" class="btn" type="button" style="width:100%">إعادة المحاولة</button></div>';
+ document.body.appendChild(o);o.querySelector("#blkB").onclick=()=>location.reload()}
 async function makeDB(){
- if(!window.supabase||SB_URL.indexOf("PASTE")===0)return null;
+ if(SB_URL.indexOf("PASTE")===0)return null;
+ if(!(await ensureLib()))throw new Error("nolib");
  const sb=SB=window.supabase.createClient(SB_URL,SB_KEY);
  let {data:{session}}=await sb.auth.getSession();
  if(!session)session=await loginUI(sb);
- const uid=session.user.id,T="docs";
+ const uid=session.user.id,T="docs";window.__em=session.user.email||"";
  return{
   doc:p=>({
    async get(){const {data,error}=await sb.from(T).select("data").eq("path",p).maybeSingle();if(error)throw error;return{exists:!!data,data:()=>data&&data.data}},
@@ -608,10 +667,10 @@ async function push(){if(!DB||!ready)return;if(busy){again=true;return}
 function save(){S.lm=Date.now();mirror();sched()}
 async function init(){
  try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
- stat("sync");let u=null;try{u=await makeDB()}catch(e){}
+ stat("sync");let u=null;try{u=await makeDB()}catch(e){blockUI("لم يتم تحميل مكتبة الاتصال. تأكد من الإنترنت، وعطّل مانع الإعلانات أو إضافات الحماية لهذا الموقع، أو جرّب متصفحًا آخر. لا تُدخل بيانات قبل أن يعمل الاتصال، لأنها لن تُحفظ.");return}
  DB=u;if(!DB){stat("local");return}
  try{cloud={};await syncMerge(true)}catch(e){fail(e);return}
- ready=true;applyTheme();setTitle();mirror();setupChk();$("names").value=S.names.join("\n");render();bkChk();cdUI();if($("v2").style.display!=="none")plist();push()}
+ ready=true;{const w=$("whoami");if(w)w.textContent=window.__em?"الحساب المسجَّل: "+window.__em:""}applyTheme();setTitle();mirror();setupChk();$("names").value=S.names.join("\n");render();bkChk();cdUI();if($("v2").style.display!=="none")plist();push()}
 function sure(b,txt,fn){if(b._t){clearTimeout(b._t);b._t=0;b.textContent=b._o;fn();return}b._o=b.textContent;b.textContent=txt;b._t=setTimeout(()=>{b._t=0;b.textContent=b._o},4000)}
 $("clear").onclick=()=>sure($("clear"),"اضغط للتأكيد",()=>{delete S.days[$("d").value];save();$("out").style.display="none";render()});
 $("saveNames").onclick=()=>{const nn=$("names").value.split("\n").map(s=>s.trim()).filter(Boolean),old=S.names;
@@ -942,6 +1001,10 @@ $("hol").onclick=()=>{const k=$("d").value;if(S.hol[k])delete S.hol[k];else S.ho
 $("d").addEventListener("change",holUpd);holUpd();
 $("lo").onclick=async()=>{try{if(SB)await SB.auth.signOut()}catch(e){}try{localStorage.removeItem("halaqa")}catch(e){}location.reload()};
 $("setupBtn").onclick=()=>openSetup(false);
+let IP=null;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();IP=e;$("instBtn").style.display=""});
+$("instBtn").onclick=async()=>{if(!IP)return;IP.prompt();try{await IP.userChoice}catch(e){}IP=null;$("instBtn").style.display="none"};
+window.addEventListener("appinstalled",()=>{$("instBtn").style.display="none"});
+if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol))navigator.serviceWorker.register("sw.js").catch(()=>{});
 applyTheme();setTitle();
 render();bkChk();
 init();
